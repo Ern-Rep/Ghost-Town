@@ -1,2 +1,2 @@
 # Ghost-Town
-Repository for microservice program.
+Repository for microservice program. This is for a class project at my school.
