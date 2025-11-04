@@ -2,11 +2,7 @@ Compact Dictionary by: Melemalt Benedict
 
 Data source is sourced from Wikitionary via kaikki.org
 
-Use ‘tab’ to cycle through the auto complete suggestions.
-
-Navigate previous searches using ‘Ctrl’ + ‘←’ or ‘Ctrl’ + ‘→’.
-
-Return to this page with ‘Ctrl’ + ‘Home’.
+"Use ‘tab’ to auto complete.
 
 Type ‘readme.txt’ for more.
 
