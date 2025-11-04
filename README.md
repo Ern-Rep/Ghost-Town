@@ -1,6 +1,6 @@
 Compact Dictionary by: Melemalt Benedict
 
-Data source is sourced from Wikitionary via kaikki.org
+Data source is sourced from Wikitionary via https://kaikki.org/dictionary/English/kaikki.org-dictionary-English.jsonl
 
 "Use ‘tab’ to auto complete.
 

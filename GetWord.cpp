@@ -16,21 +16,26 @@ bool IsNewline( char a ) {  return ( a == '\n' ); }
 std::vector<std::string> hist;
 size_t histlen = 0;
 
-// void history( std::string s ) {
-//     ynot::Coord z = ynot::get_window_size();
-//     s.append(" > ");
-//     histlen = histlen + s.size();
-//     hist.push_back( s );
-//     if ()
-//     for (size_t i = 0; i < hist.size(); i++)
-//     {
-//         std::cout << hist[i];
-//     }
-    
-// }
+void history( std::string s ) {
+    ynot::Coord z = ynot::get_window_size();
+    histlen = histlen + s.size();
+    hist.push_back( s );
+    if ( histlen < z.x ) { goto z; }
+    while ( histlen >= z.x ) {
+        histlen = histlen - hist[0].size();
+        hist.erase( hist.begin() );
+    }
+z:
+    for (size_t i = hist.size(); i > 0;)
+    {
+        i--;
+        std::cout << hist[i];
+    }
+    std::cout << "\n\n";
+}
 
 void err ( std::string choice ) {
-    printf( "\x1b[H\x1b[2JSearch Word: \n\n\n\n"
+    printf( "\x1b[H\x1b[2JSearch Word: \n\n"
             "You searched '%s'\n"
             "This word is not in the dictionary\n"
             "Please check spelling and capitalization",
@@ -84,19 +89,20 @@ size_t home ( size_t index, std::vector<std::string> words, std::vector<size_t> 
                                 // "Navigate previous searches using ‘Ctrl’ + ‘←’ or ‘Ctrl’ + ‘→’. "
                                 // "Return to this page with ‘Ctrl’ + ‘Home’\n\n"
                                 "Type ‘readme.txt’ for more\n\n\x1b[3;15H", z.x) );
-    choice = ynot::getline_ac( words, "", ynot::opt::no_validation );
+    // choice = ynot::getline_ac( words );
     // scanf( "%s", choice.data() );
-    // choice = get();
+    choice = get();
     if ( choice == "readme.txt" ) {
         system("notepad \"README.md\"");
         return -2;
     }
     it = std::find( words.begin(), words.end(), choice );
     pos = std::distance( words.begin(), it);
-    if ( choice != "dictionary" && pos == 0 ) { 
+    if ( choice != "dictionary" && pos == 1423954 ) { 
         err( choice );
         return -2;
     }
+    history( choice );
     return index = list[pos];
 }
 
@@ -109,8 +115,8 @@ size_t stand ( size_t index,  std::vector<std::string>  words, std::vector<size_
     ynot::Coord                         z = ynot::get_window_size();
     ///////////////////////////////////////////////////////////////////////////////////////////////
     printf("\x1b[HSearch Word:  ");
-    // choice = get();
-    choice = ynot::getline_ac( words, "", ynot::opt::no_validation );
+    choice = get();
+    // choice = ynot::getline_ac( words );
     // scanf( "%s", choice.data() );
     if ( choice == "readme.txt" ) {
         system("notepad \"README.md\"");
@@ -122,6 +128,7 @@ size_t stand ( size_t index,  std::vector<std::string>  words, std::vector<size_
         err( choice );
         return -2;
     }
+    history( choice );
     return index = list[pos];
 }
 
@@ -255,7 +262,9 @@ start:                                      // Indicates the start of program lo
     Definition = "";
     k = 0;
 
-    printf("\x1b[H\x1b[2J\n\n\n\n");
+    printf("\x1b[H\x1b[2J\n\n");
+
+    history(" > ");
 
     file.seekg(index);
         
@@ -300,8 +309,6 @@ stnd:
     index = 0;
            
     index = stand( index, list, words );
-
-    //history()
     
     goto start;
 
