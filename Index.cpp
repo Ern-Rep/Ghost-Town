@@ -46,7 +46,7 @@ int main()
             Line2Add += (json["pos"].GetString());
             Line2Add.push_back(9);
             Line2Add += (std::to_string(LineLocation));
-            Line2Add.push_back(9);
+            Line2Add.push_back('\n');
 
             if ( cnt%1000 == 0 )
                 printf("%lu\t%s", cnt, Line2Add.c_str());
@@ -59,6 +59,7 @@ int main()
 
             // clear the current line string
             CurrentLine = "";
+            Line2Add = "";
 
             // increment the cnt of current number of words.
             cnt++;
