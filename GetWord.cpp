@@ -1,116 +1,239 @@
 #include <fstream>
 #include <string>
+#include <vector>
 #include <list>
-#include <ynot\utf8except.cpp>
-#include <ynot\utf8conv.cpp>
-#include <ynot\terminal.cpp>
-#include <ynot\str.cpp>
-#include <rapidjson\document.h>
+#include <algorithm>
+#include <conio.h>
+#include ".\ynot\utf8except.cpp"
+#include ".\ynot\utf8conv.cpp"
+#include ".\ynot\terminal.cpp"
+#include ".\ynot\str.cpp"
+#include ".\ynot\Inputfield.cpp"
+#include ".\rapidjson\document.h"
+
+bool IsNewline( char a ) {  return ( a == '\n' ); }
 
 std::string count ( int j ) {
     if ( j == 0 ) { return ""; }
     return "➩ ";
 }
 
-unsigned long long int home( unsigned long long int index ) {
-    ynot::Coord z = ynot::get_window_size();
-    ynot::print( ynot::wrap( "Welcome to the dictionary! Start typing to search for a word\n\nSearch Word: \n\nUse ‘tab’ to cycle through the auto complete.\n\nNavigate previous searches using ‘Ctrl’ + ‘←’ or ‘Ctrl’ + ‘→’. Return to this page with ‘Ctrl’ + ‘Home’\n\nType ‘readme.txt’ for more\n\n\x1b[3;14H", z.x) );
-    scanf( "%llu",&index);
-    return index;
+size_t home ( size_t index, std::vector<std::string> words, std::vector<size_t> list ) {
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+    // Local variable decleration
+    std::vector<std::string>::iterator  it;
+    std::string                         choice;
+    size_t                              pos = 0;
+    ynot::Coord                         z = ynot::get_window_size();
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+    printf("\x1b[H\x1b[2J");
+    ynot::print( ynot::wrap(    "Welcome to the dictionary! Start typing to search for a word\n\n"
+                                "Search Word: \n\n"
+                                "Use ‘tab’ to cycle through the auto complete.\n\n"
+                                "Navigate previous searches using ‘Ctrl’ + ‘←’ or ‘Ctrl’ + ‘→’. "
+                                "Return to this page with ‘Ctrl’ + ‘Home’\n\n"
+                                "Type ‘readme.txt’ for more\n\n\x1b[3;14H", z.x) );
+    getchar();
+    choice = ynot::getline_ac( words, "", ynot::opt::no_validation );
+    // scanf( "%s", choice.data() );
+    if ( choice == "readme.txt" ) {
+        system("notepad \"README.md\"");
+    }
+    it = std::find( words.begin(), words.end(), choice );
+    pos = std::distance( words.begin(), it);
+    return index = list[pos];
 }
 
-unsigned long long int stand ( unsigned long long int index ) {
-    printf("Search Word: ");
-    scanf( "%llu",&index);
-    return index;
+size_t stand ( size_t index,  std::vector<std::string>  words, std::vector<size_t> list ) {
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+    // Local variable decleration
+    std::vector<std::string>::iterator  it;
+    std::string                         choice;
+    size_t                              pos = 0;
+    ynot::Coord                         z = ynot::get_window_size();
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+    printf("\x1b[HSearch Word: ");
+    choice = ynot::getline_ac( words, "", ynot::opt::no_validation );
+    // scanf( "%s", choice.data() );
+    if ( choice == "readme.txt" ) {
+        system("notepad \"README.md\"");
+    }
+    it = std::find( words.begin(), words.end(), choice );
+    pos = std::distance( words.begin(), it);
+    return index = list[pos];
 }
 
-int main() {
-
-    std::string Definition, // holds json file
-                sent,
-                tab = "    ";
+std::vector<std::string> diction ( std::string Definition ) {
+    // make dictionary output 1 string in order to use ynot::paginator
+    std::string sent;
+    std::vector<std::string> diction;
     std::list<int> objects;
     std::list<int>::iterator it = objects.begin();
-
-    std::ifstream file("kaikki.org-dictionary-English.jsonl"); //BIG FILE
-
+    
     rapidjson::Document doc;
     rapidjson::Value senses(rapidjson::kObjectType);
 
-    /////////////////////////////////////////////////////////
-    // Section for parsing location of a word in the BIG FILE.
-
-    char curr = 0;
-
-    unsigned long long int index = 0; // index of defintion location in BIG FILE, eventially will be called on by user.
-
-    index = home( index );
-
-    start:
-
-    printf("\x1b[H\x1b[J\n\n");
-
-    file.seekg(index);
-
-    while ( file.get(curr) ) {
-        if (curr == '\n') { break; }
-        Definition.push_back(curr);
-    }
-
+    ynot::Coord z = ynot::get_window_size();
+    
     doc.Parse(Definition.c_str());
     senses = doc["senses"];
+    
+    diction.resize( 1 );
+    objects.resize( senses.Size() );
 
-    //  everything above here works well
-    /////////////////////////////////////////////////////////
-    // This is where the issues start, we have to parse the json for the definitions.
+    for ( int k = 0; k < objects.size(); k++) {
+        it++;
+        *it = k;
+    }
+    
+    it = objects.begin();
 
-
-    for ( int i = 0; i < senses.Size(); i++) { objects.push_back(i); }
-
-    ynot::Coord z = ynot::get_window_size();
-
-    std::cout << doc["word"].GetString() << " (" << doc["pos"].GetString() << ")\n\n";
+    diction[0] = doc["word"].GetString();
+    diction[0].append(" (");
+    diction[0].append( doc["pos"].GetString() );
+    diction[0].append(")\n\n");
 
     while ( objects.empty() == false ) {
 		sent = senses[objects.front()]["id"].GetString();
-		if ( sent.back() != '1' ) {
-			if ( senses[objects.front()].HasMember("raw_glosses") ) {
-				for ( int j = 0; j < senses[objects.front()]["raw_glosses"].Size(); j++ ) {
-                    ynot::print( ynot::wrap( count( j ) + senses[objects.front()]["raw_glosses"][j].GetString(), z.x - ( 5 + ( j + 1) * 8 ), '\n' + std::string( j + 1, '\t' ) ) + '\n' );
-                }
-			}
-			else if ( senses[objects.front()].HasMember("raw_glosses") ) {
-				for ( int j = 0; j < senses[objects.front()]["glosses"].Size(); j++ ) {
-                    ynot::print( ynot::wrap( count( j ) + senses[objects.front()]["glosses"][j].GetString(), z.x - ( 5 + ( j + 1) * 8 ), '\n' + std::string( j + 1, '\t' ) ) + '\n' );
-                }
-			}
-            else { break; }
-			objects.pop_front();
-			it = objects.begin();
-		}
-		sent.push_back('1');
+        if ( senses[objects.front()].HasMember("raw_glosses") ) {
+            for ( int j = 0; j < senses[objects.front()]["raw_glosses"].Size(); j++ ) {
+                diction.push_back( ynot::wrap( count( j ) + senses[objects.front()]["raw_glosses"][j].GetString(), z.x - ( 5 + ( j + 1) * 8 ), '\n' + std::string( j + 1, '\t' ) ) + '\n' );
+            }
+        }
+        else if ( senses[objects.front()].HasMember("glosses") ) {
+            for ( int j = 0; j < senses[objects.front()]["glosses"].Size(); j++ ) {
+                diction.push_back( ynot::wrap( count( j ) + senses[objects.front()]["glosses"][j].GetString(), z.x - ( 5 + ( j + 1) * 8 ), '\n' + std::string( j + 1, '\t' ) ) + '\n' );
+            }
+        }
+        else { break; }
+        objects.pop_front();
+        it = objects.begin();
+        sent.push_back('1');
         while ( it != objects.end() ) {
             if ( senses[*it]["id"].GetString() == sent ) {
                 if ( senses[*it].HasMember("raw_glosses") ) {
                     int j = senses[*it]["raw_glosses"].Size() - 1;
-                    ynot::print( ynot::wrap( count( j ) + senses[*it]["raw_glosses"][j].GetString(), z.x - ( 5 + ( j + 1) * 8 ), '\n' + std::string( j + 1, '\t' ) ) + '\n' );                    
+                    diction.push_back( ynot::wrap( count( j ) + senses[*it]["raw_glosses"][j].GetString(), z.x - ( 5 + ( j + 1) * 8 ), '\n' + std::string( j + 1, '\t' ) ) + '\n' );
                 }
                 else if ( senses[*it].HasMember("glosses") ) {
                     int j = senses[*it]["glosses"].Size() - 1;
-                    ynot::print( ynot::wrap( count( j ) + senses[*it]["glosses"][j].GetString(), z.x - ( 5 + ( j + 1) * 8 ), '\n' + std::string( j + 1, '\t' ) ) + '\n' );
+                    diction.push_back( ynot::wrap( count( j ) + senses[*it]["glosses"][j].GetString(), z.x - ( 5 + ( j + 1) * 8 ), '\n' + std::string( j + 1, '\t' ) ) + '\n' );
                 }
                 else { break; }
                 objects.erase(it);
             }
             it++;
         }
-        printf("\n");
+        diction.push_back("\n");
     }
-    printf("\x1b[H");
-    index = stand( index );
+    return diction;
+}
+
+int main() {
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// Variable declerations for parsing words.tsv a
+    std::ifstream           tsv("word.tsv");  // Index file generated by index.cpp
+    std::vector<std::string>
+                            list,   // Holds list of words
+                            prot;   // Holds raw text that gets sorted
+    std::vector<size_t>     words;  // Holds word index
+    std::string             word;   // Container for current line
+    char                    curr;   // Holds current character
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// Section for parsing words.tsv and sorting output
+
+    while ( tsv.get( curr ) ) {
+        if ( curr == '\n' ) {
+            prot.push_back(word);
+            word = "";
+        }
+        word.push_back( curr );
+    }
+
+    tsv.close();
+
+    std::sort( prot.begin(), prot.end() );
+
+    for (size_t i = 0; i < prot.size(); i++) {
+        list.push_back( prot[i].substr( 1, prot[i].find( '\t' ) - 1 ) );
+        words.push_back( std::stoull( prot[i].substr( prot[i].find_last_of( '\t' ), prot[i].size() ) ) );
+    }
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// Declerations for Dictionary parsing
+
+    std::ifstream               file("kaikki.org-dictionary-English.jsonl");  // BIG json FILE 
+    std::string                 Definition; // Holds json file
+    std::list<int>              line;       // List of word senses
+    std::list<int>::iterator    it;         // Iterator for list
+    std::vector<std::string>    book;       // Holds return of diction()
+    size_t                      index = 0;  // Index of defintion location in BIG FILE
+    int                         k;          // Counter for dictionary print size
+    ynot::Coord                 z;          // Variable for window size                                
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// Section for parsing location of a word in the BIG FILE.
+
+    index = home( index, list, words );
+
+start:                                      // Indicates the start of program loop
+
+    if ( index == -1 ) { return 0; }
+
+    if ( line.empty() == false ) {
+        for ( int i = 0; line.size() != 0; i++) {
+            line.pop_front(); 
+        }
+    }
     
-    if ( index != -1 )  { goto start; }
+    z = ynot::get_window_size();
+    Definition = "";
+    k = 0;
+
+    printf("\x1b[H\x1b[2J\n\n");
+
+    file.seekg(index);
+        
+    while ( file.get(curr) ) {
+        if (curr == '\n') { break; }
+        Definition.push_back(curr);
+    }
+
+    book = diction( Definition );
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// This section is for displaying the results of the dictionary pull
+
+    line.push_back(2);
+
+    for ( int i = 0; i < book.size(); i++) {
+        line.push_back( std::count_if( book[i].begin(), book[i].end(), IsNewline ) );
+    }
+
+    Display:
     
-    return 0;
+    it = line.begin();
+
+    for ( int i = 0; i < 2; i++ ) {
+        k = k + *it;
+        it++;
+        if ( k + 1 >= z.y ) 
+            { break; }
+        ynot::print(book[i]);
+    }
+
+    for ( int i = 2; i < book.size(); i++ ) {
+        k = k + *it;
+        it++;
+        if ( k + 1 >= z.y ) 
+            { break; }
+        ynot::print(book[i]);
+    }
+           
+    index = stand( index, list, words );
+    
+    goto start;
+
+    // return 0; @ line 180
 }

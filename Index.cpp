@@ -13,7 +13,7 @@ int main()
     // string declarations
     std::string NameOfFile;
     std::string CurrentLine;
-    std::string Line2Add;
+    std::string Line2Add = "";
 
     // int declarations
     unsigned long long int CharCount = 0;
@@ -21,8 +21,8 @@ int main()
     unsigned long int cnt = 0;
 
     // char declarations
-    char curr;
-    char prev;
+    char curr = 0;
+    char prev = 0;
 
     //Loop for extracting text from the JSONL file. Makes new JSON file according to what text is in the file.
 
@@ -36,24 +36,20 @@ int main()
             // Pass pointer to current line to json parser
             json.Parse(CurrentLine.c_str());
 
-            // Add to the file according to what character it starts with
-            NameOfFile = "./words/word";
-            // NameOfFile.push_back(tolower(json["word"].GetString()[0]));
-            NameOfFile += (".tsv");
+            // Add to the index file. will eventually hold 1,000,000+ words with about 50,000,000 characters.
+            NameOfFile = "./word";
+            NameOfFile += ".tsv";
 
             // Line to add to file
-            Line2Add = "";
             Line2Add += (json["word"].GetString());
             Line2Add.push_back(9);
             Line2Add += (json["pos"].GetString());
             Line2Add.push_back(9);
             Line2Add += (std::to_string(LineLocation));
             Line2Add.push_back(9);
-            Line2Add += (std::to_string(cnt));
-            Line2Add.push_back('\n');
 
             if ( cnt%1000 == 0 )
-                printf("%s", Line2Add.c_str() );
+                printf("%lu\t%s", cnt, Line2Add.c_str());
             // Open correct file and add next word to it
                 // send itterator to before end of file and append text
 
